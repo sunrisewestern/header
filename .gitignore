@@ -1,0 +1,38 @@
+# Compiled binary files
+/target
+
+# Dependency lock file
+Cargo.lock
+
+# IDE files
+.idea
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Rust-specific files
+*.rs.bk
+*.rlib
+*.rmeta
+*.d
+*.so
+*.dll
+*.exe
+*.pdb
+
+# Backup files
+*~
+*.bak
+*.swp
+
+# Editor backup files
+*.swo
+
+# Temporary files
+*.tmp
+
