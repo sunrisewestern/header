@@ -19,8 +19,8 @@ jobs:
             runs-on: ubuntu-latest
           - target: aarch64-apple-darwin
             runs-on: macos-latest
-          - target: aarch64-unknown-linux-musl
-            runs-on: ubuntu-latest
+          # - target: aarch64-unknown-linux-musl
+          #   runs-on: ubuntu-latest
 
     runs-on: ${{ matrix.runs-on }}
 
@@ -49,11 +49,11 @@ jobs:
         if: ${{ matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-apple-darwin' }}
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Build (aarch64)
-        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
-        run: |
-          export CC=aarch64-linux-gnu-gcc
-          cargo build --release --target ${{ matrix.target }}
+      # - name: Build (aarch64)
+      #   if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
+      #   run: |
+      #     export CC=aarch64-linux-gnu-gcc
+      #     cargo build --release --target ${{ matrix.target }}
 
       - name: Create Artifact
         run: |
@@ -101,12 +101,12 @@ jobs:
           asset_path: artifacts/header-aarch64-apple-darwin/header-aarch64-apple-darwin
           asset_name: header-aarch64-apple-darwin
           asset_content_type: application/octet-stream
-      - name: Upload Release Asset 3
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifacts/header-aarch64-unknown-linux-musl/header-aarch64-unknown-linux-musl
-          asset_name: header-aarch64-unknown-linux-musl
-          asset_content_type: application/octet-stream
+      # - name: Upload Release Asset 3
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: artifacts/header-aarch64-unknown-linux-musl/header-aarch64-unknown-linux-musl
+      #     asset_name: header-aarch64-unknown-linux-musl
+      #     asset_content_type: application/octet-stream
