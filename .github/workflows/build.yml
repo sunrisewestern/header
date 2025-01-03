@@ -1,0 +1,41 @@
+name: Build Distributions
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-gnu
+          - aarch64-unknown-linux-gnu
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Build
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Create Artifact
+        run: |
+          mkdir -p dist
+          cp target/${{ matrix.target }}/release/header dist/header-${{ matrix.target }}
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: header-${{ matrix.target }}
+          path: dist
