@@ -4,7 +4,7 @@ name: Build and Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
   workflow_dispatch:
 
 permissions:
@@ -23,7 +23,7 @@ jobs:
             runs-on: ubuntu-latest
 
     runs-on: ${{ matrix.runs-on }}
-    
+
     steps:
       - uses: actions/checkout@v3
 
@@ -46,7 +46,14 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Build
+        if: ${{ matrix.target == 'x86_64-unknown-linux-musl' || matrix.target == 'aarch64-apple-darwin' }}
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build (aarch64)
+        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' }}
+        run: |
+          export CC=aarch64-linux-gnu-gcc
+          cargo build --release --target ${{ matrix.target }}
 
       - name: Create Artifact
         run: |
