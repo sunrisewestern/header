@@ -1,5 +1,5 @@
 # YAML
-name: Build Distributions
+name: Build and Release
 
 on:
   push:
@@ -16,8 +16,6 @@ jobs:
             runs-on: ubuntu-latest
           - target: aarch64-apple-darwin
             runs-on: macos-latest
-          - target: x86_64-pc-windows-gnu
-            runs-on: windows-latest
           - target: aarch64-unknown-linux-gnu
             runs-on: ubuntu-latest
 
@@ -52,3 +50,58 @@ jobs:
         with:
           name: header-${{ matrix.target }}
           path: dist
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.run_id }}
+          release_name: Release ${{ github.run_id }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/header-x86_64-unknown-linux-gnu/header-x86_64-unknown-linux-gnu
+          asset_name: header-x86_64-unknown-linux-gnu
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset 2
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/header-aarch64-apple-darwin/header-aarch64-apple-darwin
+          asset_name: header-aarch64-apple-darwin
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset 3
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/header-x86_64-pc-windows-gnu/header-x86_64-pc-windows-gnu
+          asset_name: header-x86_64-pc-windows-gnu
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset 4
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: artifacts/header-aarch64-unknown-linux-gnu/header-aarch64-unknown-linux-gnu
+          asset_name: header-aarch64-unknown-linux-gnu
+          asset_content_type: application/octet-stream
