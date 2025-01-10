@@ -54,7 +54,7 @@ fn main() {
 
             if let Err(e) = io::stdout().write_all(output.as_bytes()) {
                 if e.kind() == io::ErrorKind::BrokenPipe {
-                    eprintln!("Broken pipe detected. Exiting.");
+                    // Do not print message to stderr
                     process::exit(0);
                 } else {
                     eprintln!("Error writing to stdout: {}", e);
