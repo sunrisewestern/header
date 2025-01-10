@@ -1,6 +1,6 @@
 use clap::{App, Arg};
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::{self, BufRead, BufReader, Write};
 use std::process;
 
 fn main() {
@@ -41,14 +41,25 @@ fn main() {
     });
 
     let reader = BufReader::new(file);
+    let mut lines = reader.lines();
 
-    if let Some(Ok(line)) = reader.lines().next() {
+    if let Some(Ok(line)) = lines.next() {
         let fields: Vec<&str> = line.split(delimiter).collect();
         for (index, field) in fields.iter().enumerate() {
-            if show_number {
-                println!("{}\t{}", field, index + 1);
+            let output = if show_number {
+                format!("{}\t{}\n", field, index + 1)
             } else {
-                println!("{}", field);
+                format!("{}\n", field)
+            };
+
+            if let Err(e) = io::stdout().write_all(output.as_bytes()) {
+                if e.kind() == io::ErrorKind::BrokenPipe {
+                    eprintln!("Broken pipe detected. Exiting.");
+                    process::exit(0);
+                } else {
+                    eprintln!("Error writing to stdout: {}", e);
+                    process::exit(1);
+                }
             }
         }
     }
@@ -58,15 +69,15 @@ fn main() {
 mod tests {
     use super::*;
     use std::io::Write;
+    use tempfile::NamedTempFile;
 
     #[test]
     fn test_main() {
         let test_input = "field1\tfield2\tfield3\n";
-        let mut test_file = tempfile::NamedTempFile::new().expect("Failed to create temp file");
+        let mut test_file = NamedTempFile::new().expect("Failed to create temp file");
         write!(test_file, "{}", test_input).expect("Failed to write to temp file");
 
         let test_file_path = test_file.path().to_str().unwrap();
-
         let output = std::process::Command::new(std::env::current_exe().unwrap())
             .arg("-d")
             .arg("\t")
@@ -77,6 +88,50 @@ mod tests {
 
         assert!(output.status.success());
         let output_str = String::from_utf8_lossy(&output.stdout);
-        assert_eq!(output_str.trim(), "field1 1\nfield2 2\nfield3 3");
+        assert_eq!(output_str.trim(), "field1\t1\nfield2\t2\nfield3\t3");
+    }
+
+    #[test]
+    fn test_empty_file() {
+        let mut test_file = NamedTempFile::new().expect("Failed to create temp file");
+        let test_file_path = test_file.path().to_str().unwrap();
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .arg(test_file_path)
+            .output()
+            .expect("Failed to execute process");
+
+        assert!(output.status.success());
+        assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "");
+    }
+
+    #[test]
+    fn test_broken_pipe() {
+        let test_input = "field1\tfield2\tfield3\n";
+        let mut test_file = NamedTempFile::new().expect("Failed to create temp file");
+        write!(test_file, "{}", test_input).expect("Failed to write to temp file");
+
+        let test_file_path = test_file.path().to_str().unwrap();
+
+        let output = std::process::Command::new(std::env::current_exe().unwrap())
+            .arg("-d")
+            .arg("\t")
+            .arg(test_file_path)
+            .stdout(std::process::Stdio::piped())
+            .spawn()
+            .expect("Failed to spawn process");
+
+        let head_output = std::process::Command::new("head")
+            .arg("-n")
+            .arg("1")
+            .stdin(output.stdout.unwrap())
+            .output()
+            .expect("failed to execute head");
+
+        assert!(head_output.status.success());
+        let expected_output = "field1\n".to_string();
+        assert_eq!(
+            String::from_utf8_lossy(&head_output.stdout),
+            expected_output
+        );
     }
 }
