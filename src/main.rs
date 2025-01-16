@@ -7,7 +7,7 @@ fn main() {
     let matches = App::new("header")
         .version("1.0")
         .author("Sunrisewestern")
-        .about("Prints the first line of a file, optionally with field numbers.")
+        .about("Prints the fields of the first line of a file, optionally with field numbers.")
         .arg(
             Arg::with_name("delimiter")
                 .short('d')
