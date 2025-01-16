@@ -1,13 +1,14 @@
-Prints the first line of a file, optionally with field numbers.
+A command-line utility that prints the fields of the first line of a file, with optional field numbering.
 
-USAGE:
-    header [OPTIONS] <FILE>
+## Usage
 
-ARGS:
-    <FILE>    Input file to process
+```bash
+header [OPTIONS] <FILE>
+```
 
-OPTIONS:
-    -d, --delimiter <DELIMITER>    Sets the field delimiter [default: "\t"]
-    -h, --help                     Print help information
-    -n, --number                   Show the field number
-    -V, --version                  Print version info
+### Options
+- `-d`, `--delimiter <DELIMITER>`: Sets the field delimiter (default: `\t`).
+- `-n`, `--number`: Show the field number.
+
+### Arguments
+- `<FILE>`: Input file to process.
